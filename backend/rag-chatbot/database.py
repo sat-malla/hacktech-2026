@@ -1,5 +1,5 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai.embeddings import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from uuid import uuid4
@@ -12,7 +12,7 @@ load_dotenv()
 DATA_PATH = r"data"
 CHROMA_PATH = r"chroma_db"
 
-embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large")
+embeddings_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 vector_store = Chroma(
     collection_name="soil_data_collection",
@@ -26,7 +26,6 @@ df = pd.read_csv(csv_file)
 # Convert CSV rows to LangChain documents
 raw_documents = []
 for index, row in df.iterrows():
-    # Create a descriptive text content for each row
     content = f"""
     Date: {row['date']}
     Plant Species: {row['plant_species']}
@@ -58,6 +57,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 
 chunks = text_splitter.split_documents(raw_documents)
+vector_store.reset_collection()
 
 uuids = [str(uuid4()) for _ in range(len(chunks))]
 
