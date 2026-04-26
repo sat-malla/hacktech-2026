@@ -14,7 +14,7 @@ export interface LiveMetrics {
   orientation: number;
   depth: number;
   gps: string;
-  history: { moisture: number; temperature: number }[];
+  history: { moisture: number; temperature: number; waterLevel: number }[];
   stale: boolean;
 }
 
@@ -50,7 +50,7 @@ const PLACEHOLDER: LiveMetrics = {
   orientation: 0,
   depth: 0,
   gps: "—",
-  history: Array.from({ length: HISTORY_SIZE }, () => ({ moisture: 0, temperature: 0 })),
+  history: Array.from({ length: HISTORY_SIZE }, () => ({ moisture: 0, temperature: 0, waterLevel: 0 })),
   stale: true,
 };
 
@@ -58,7 +58,7 @@ function toMetrics(rows: Reading[], prev: LiveMetrics): LiveMetrics {
   if (!rows.length) return prev;
   const latest = rows[0];
   const chrono = [...rows].reverse();
-  const history = chrono.map((r) => ({ moisture: r.soil_moisture, temperature: r.air_temperature }));
+  const history = chrono.map((r) => ({ moisture: r.soil_moisture, temperature: r.air_temperature, waterLevel: r.water_level }));
   while (history.length < HISTORY_SIZE) history.unshift(history[0]);
   return {
     ...prev,

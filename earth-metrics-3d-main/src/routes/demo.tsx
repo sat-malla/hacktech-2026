@@ -104,10 +104,15 @@ function StatusSummary({ m }: { m: LiveMetrics }) {
     m.temperature > 75 ? { label: "Warm", tone: "text-[#d4a84a]" } :
     { label: "Ideal", tone: "text-[#7aa84a]" };
 
+  const waterStatus =
+    m.waterLevel < 1 ? { label: "Low", tone: "text-[#d4a84a]" } :
+    m.waterLevel > 3 ? { label: "High", tone: "text-cyan-data" } :
+    { label: "Normal", tone: "text-[#7aa84a]" };
+
   const recommendation =
-    m.moisture < 35
+    m.moisture < 35 || m.waterLevel < 1
       ? "Your plants could use a drink. Consider watering in the next few hours."
-      : m.moisture > 75
+      : m.moisture > 75 || m.waterLevel > 3
       ? "Soil is well saturated — hold off on watering today."
       : "Conditions look great. No action needed right now.";
 
@@ -126,8 +131,8 @@ function StatusSummary({ m }: { m: LiveMetrics }) {
           <div className={`font-display font-light text-lg ${tempStatus.tone}`}>{tempStatus.label}</div>
         </div>
         <div>
-          <div className="text-[10px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground mb-1">Weather</div>
-          <div className="font-display font-light text-lg">Cloudy</div>
+          <div className="text-[10px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground mb-1">Water Level</div>
+          <div className={`font-display font-light text-lg ${waterStatus.tone}`}>{waterStatus.label}</div>
         </div>
         <div>
           <div className="text-[10px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground mb-1">Type</div>
@@ -280,6 +285,7 @@ function DemoPage() {
   const metrics = useLiveMetrics(1800);
   const moistureHist = metrics.history.map((h) => h.moisture);
   const tempHist = metrics.history.map((h) => h.temperature);
+  const waterHist = metrics.history.map((h) => h.waterLevel);
 
   const [chat, setChat] = useState<{ role: "user" | "bot"; text: string }[]>([
     { role: "bot", text: "Hi! I'm SoilLink. Ask me anything about your plants — watering, weather, soil temp, or what to do next." },
@@ -377,14 +383,12 @@ function DemoPage() {
           </MetricCard>
 
           <MetricCard
-            label="Soil Temperature"
-            value={metrics.soilTemperature.toFixed(1)}
-            unit="°F"
-            accent="copper"
+            label="Water Level"
+            value={metrics.waterLevel.toFixed(1)}
+            unit="in"
+            accent="cyan"
           >
-            <div className="text-[10px] font-mono-tight text-muted-foreground tracking-wider">
-              Underground probe
-            </div>
+            <Sparkline values={waterHist} color="#4ade80" />
           </MetricCard>
 
           <MetricCard
