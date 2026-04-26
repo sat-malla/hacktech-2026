@@ -14,12 +14,12 @@ export const Route = createFileRoute("/scan")({
       {
         name: "description",
         content:
-          "Simulate a camera-based soil scan. Get soil type, organic matter, drainage, and pH with confidence scoring.",
+          "Simulate a camera-based soil scan. Get soil type, organic matter, drainage, and confidence scoring.",
       },
       { property: "og:title", content: "Scan — SoilCompass" },
       {
         property: "og:description",
-        content: "Simulated camera scan reading: soil type, OM, drainage, pH.",
+        content: "Simulated camera scan reading: soil type, OM, drainage.",
       },
     ],
   }),
@@ -42,7 +42,7 @@ function ScanPage() {
               Snap, classify, sync.
             </h1>
             <p className="mt-2 max-w-md text-[13.5px] text-muted-foreground">
-              The scan overrides pH, OM, and drainage in your live diagnosis.
+              The scan overrides OM, drainage, and confidence in your live diagnosis.
             </p>
           </header>
 

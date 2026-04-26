@@ -167,8 +167,6 @@ export function diagnose(
 
 function primaryFixDays(key: MetricKey): number {
   switch (key) {
-    case "ph":
-      return 21;
     case "drainage":
       return 14;
     case "om":
@@ -213,7 +211,6 @@ function bell(value: number, peak: number, halfWidth: number): number {
 
 export function rankActions(diag: Diagnosis, crop: CropProfile): ActionItem[] {
   const COSTS: Record<MetricKey, [number, number]> = {
-    ph: [40, 180],
     nitrogen: [25, 90],
     moisture: [10, 60],
     drainage: [80, 220],
@@ -223,7 +220,6 @@ export function rankActions(diag: Diagnosis, crop: CropProfile): ActionItem[] {
     co2: [25, 90],
   };
   const TITLES: Record<MetricKey, string> = {
-    ph: "Lime / sulfur amendment to correct pH",
     nitrogen: "Apply slow-release nitrogen blend",
     moisture: "Adjust irrigation schedule + mulch",
     drainage: "Install French drain / broadfork to break compaction",
@@ -233,7 +229,6 @@ export function rankActions(diag: Diagnosis, crop: CropProfile): ActionItem[] {
     co2: "Inoculate with compost tea + cover crop",
   };
   const EFFORT: Record<MetricKey, number> = {
-    ph: 14,
     nitrogen: 3,
     moisture: 1,
     drainage: 7,

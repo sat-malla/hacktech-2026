@@ -7,7 +7,6 @@ export type ScenarioId =
 export type CropId = "tomatoes" | "strawberries";
 
 export type MetricKey =
-  | "ph"
   | "nitrogen"
   | "moisture"
   | "drainage"
@@ -46,7 +45,6 @@ export type Scenario = {
     soilType: string;
     om: number;
     drainage: number;
-    ph: number;
     confidence: number;
   };
 };

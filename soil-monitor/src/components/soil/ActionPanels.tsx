@@ -15,8 +15,8 @@ export function ROIActions() {
   }
 
   return (
-    <div className="card-elevated overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border px-6 py-4">
+    <div className="card-elevated flex h-[450px] flex-col overflow-hidden">
+      <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
         <div className="text-[12px] font-medium text-muted-foreground">
           ROI-ranked actions
         </div>
@@ -24,7 +24,7 @@ export function ROIActions() {
           {actions.length} recommended
         </span>
       </div>
-      <ul className="divide-y divide-border">
+      <ul className="flex-1 divide-y divide-border overflow-y-auto scrollbar-hide">
         {actions.slice(0, 6).map((a, i) => (
           <motion.li
             key={a.id}
