@@ -1,3 +1,9 @@
+from __future__ import annotations
+
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,7 +13,11 @@ import os
 import re
 from dotenv import load_dotenv
 
+import csv_sync
+
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s | %(message)s")
 
 K2_API_KEY = os.getenv("K2_API_KEY")
 BACKBOARD_API_KEY = os.getenv("BACKBOARD_API_KEY")
@@ -110,7 +120,19 @@ def clean(text: str) -> str:
     text = re.sub(r"~~(.+?)~~", r"\1", text)
     return text.strip()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    task = asyncio.create_task(csv_sync.run(ASSISTANT_ID, BACKBOARD_API_KEY))
+    logging.getLogger(__name__).info("csv_sync started (poll=%ds)", csv_sync.POLL_INTERVAL_S)
+    yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -166,42 +188,88 @@ def classify_intent(message: str) -> str:
     
     return "chat"
 
+async def _backboard_retrieve(question: str) -> str:
+    """
+    Create a Backboard thread, post the question, and return the retrieved
+    context string. Falls back to empty string on any error so the chat
+    endpoint can continue with inline CSV context.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            r = await client.post(
+                f"{BASE_URL}/assistants/{ASSISTANT_ID}/threads",
+                headers=HEADERS,
+                data={},
+            )
+            if r.status_code != 200:
+                return ""
+            thread_id = r.json().get("thread_id", "")
+            if not thread_id:
+                return ""
+
+            r2 = await client.post(
+                f"{BASE_URL}/threads/{thread_id}/messages",
+                headers=HEADERS,
+                data={"content": question, "stream": "false", "memory": "Auto"},
+            )
+            if r2.status_code != 200:
+                return ""
+            body = r2.json()
+
+        parts: list[str] = []
+        if body.get("retrieved_files"):
+            parts.append("Retrieved files: " + ", ".join(body["retrieved_files"]))
+        for mem in body.get("retrieved_memories") or []:
+            parts.append(mem.get("content", ""))
+        if body.get("content"):
+            parts.append(body["content"])
+        return "\n".join(parts)
+    except Exception as e:
+        logging.getLogger(__name__).warning("backboard retrieve error: %s", e)
+        return ""
+
+
 @app.post("/chat")
 async def chat(req: ChatRequest):
+    # Always load the most-recent sensor CSVs for inline context (fast path)
     user_data_parts = []
-    for data_path in ["../ml-prediction/csv_output"]:
-        if not os.path.exists(data_path):
-            continue
-        for fname in sorted(os.listdir(data_path)):
+    csv_output_path = "../ml-prediction/csv_output"
+    if os.path.exists(csv_output_path):
+        for fname in sorted(os.listdir(csv_output_path))[-10:]:  # last 10 CSVs
             if fname.endswith(".csv"):
-                with open(os.path.join(data_path, fname)) as f:
-                    content = f.read()
-                user_data_parts.append(f"=== {fname} ===\n{content}")
+                with open(os.path.join(csv_output_path, fname)) as f:
+                    user_data_parts.append(f"=== {fname} ===\n{f.read()}")
 
     knowledge_parts = []
     for fname in sorted(os.listdir("data")):
         if fname.endswith(".csv"):
             with open(os.path.join("data", fname)) as f:
-                content = f.read()
-            knowledge_parts.append(f"=== {fname} ===\n{content}")
+                knowledge_parts.append(f"=== {fname} ===\n{f.read()}")
 
-    user_context = "\n\n".join(user_data_parts) if user_data_parts else "No user sensor data available."
-    knowledge_context = "\n\n".join(knowledge_parts) if knowledge_parts else "No reference data available."
+    inline_sensor   = "\n\n".join(user_data_parts) if user_data_parts else "No sensor data available."
+    inline_knowledge = "\n\n".join(knowledge_parts) if knowledge_parts else "No reference data available."
+
+    # Retrieve RAG context from Backboard (non-blocking — degrades gracefully)
+    rag_context = await _backboard_retrieve(req.message)
 
     intent = classify_intent(req.message)
 
     if intent == "data":
+        rag_block = f"\n=== BACKBOARD RAG CONTEXT ===\n{rag_context}\n" if rag_context else ""
         user_content = (
             f"Question: {req.message}\n\n"
-            f"=== USER'S ACTUAL SENSOR READINGS ===\n{user_context}\n\n"
-            f"=== REFERENCE KNOWLEDGE BASE ===\n{knowledge_context}\n=== End ==="
+            f"=== USER'S ACTUAL SENSOR READINGS ===\n{inline_sensor}\n"
+            f"{rag_block}"
+            f"=== REFERENCE KNOWLEDGE BASE ===\n{inline_knowledge}\n=== End ==="
         )
         system = SYSTEM_PROMPT
     elif intent == "agri":
+        rag_block = f"\n=== BACKBOARD RAG CONTEXT ===\n{rag_context}\n" if rag_context else ""
         user_content = (
             f"Question: {req.message}\n\n"
-            f"Answer using ONLY the reference knowledge base below. Do not use outside knowledge.\n\n"
-            f"=== REFERENCE KNOWLEDGE BASE ===\n{knowledge_context}\n=== End ==="
+            f"Answer using ONLY the sources below. Do not use outside knowledge.\n"
+            f"{rag_block}"
+            f"=== REFERENCE KNOWLEDGE BASE ===\n{inline_knowledge}\n=== End ==="
         )
         system = SYSTEM_PROMPT
     else:
@@ -212,7 +280,7 @@ async def chat(req: ChatRequest):
         {"role": "system", "content": system},
         {"role": "user", "content": user_content},
     ]
-    
+
     full_message = ""
     async with httpx.AsyncClient(timeout=k2_timeout) as client:
         async with client.stream(
@@ -229,6 +297,6 @@ async def chat(req: ChatRequest):
                 try:
                     delta = json.loads(line)["choices"][0]["delta"].get("content", "")
                     full_message += delta
-                except:
+                except Exception:
                     continue
     return {"response": clean(full_message)}

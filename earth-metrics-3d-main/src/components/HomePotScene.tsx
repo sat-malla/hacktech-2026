@@ -279,7 +279,7 @@ export default function HomePotScene({ metrics, healthLevel, showMetrics = true 
               <MetricTag
                 position={[1.4, 1.3, 0]}
                 label="Room Temp"
-                value={`${metrics.temperature.toFixed(1)}°C`}
+                value={`${metrics.temperature.toFixed(1)}°F`}
                 color="copper"
               />
               <MetricTag

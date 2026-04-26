@@ -50,7 +50,7 @@ const SERIES_META: Record<
   { label: string; unit: string; color: string }
 > = {
   moisture:    { label: "Moisture",    unit: "%",  color: SERIES_COLORS.moisture },
-  temperature: { label: "Temperature", unit: "°C", color: SERIES_COLORS.temperature },
+  temperature: { label: "Temperature", unit: "°F", color: SERIES_COLORS.temperature },
   waterLevel:  { label: "Water Level", unit: "cm", color: SERIES_COLORS.waterLevel },
 };
 
@@ -188,21 +188,29 @@ export default function HistoryChart() {
             </g>
           ))}
 
-          {/* X labels */}
-          {data.map((d, i) => (
-            <text
-              key={d.month}
-              x={xFor(i)}
-              y={H - 14}
-              fontSize="9"
-              fontFamily="var(--font-mono)"
-              textAnchor="middle"
-              fill="currentColor"
-              opacity={hover === i ? 1 : 0.5}
-            >
-              {d.month}
-            </text>
-          ))}
+          {/* X labels — only at ~5 significant positions to avoid clutter and duplicate keys */}
+          {data.map((d, i) => {
+            const n = data.length;
+            const slots = Math.min(5, n);
+            const step = (n - 1) / (slots - 1);
+            const isSignificant = Array.from({ length: slots }, (_, s) => Math.round(s * step)).includes(i);
+            const isHovered = hover === i;
+            if (!isSignificant && !isHovered) return null;
+            return (
+              <text
+                key={i}
+                x={xFor(i)}
+                y={H - 14}
+                fontSize="9"
+                fontFamily="var(--font-mono)"
+                textAnchor="middle"
+                fill="currentColor"
+                opacity={isHovered ? 1 : 0.45}
+              >
+                {d.month}
+              </text>
+            );
+          })}
 
           {/* Lines only — no area fills */}
           {(Object.keys(SERIES_META) as SeriesKey[]).map((k) => {
@@ -256,7 +264,7 @@ export default function HistoryChart() {
                 x2={xFor(hover)}
                 y1={PAD.top}
                 y2={PAD.top + innerH}
-                stroke="var(--copper)"
+                stroke="#fb923c"
                 strokeOpacity="0.4"
                 strokeDasharray="3 3"
               />

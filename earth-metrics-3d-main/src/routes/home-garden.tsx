@@ -52,7 +52,7 @@ function HomeGardenPage() {
 
   // Plant care logic for an indoor potted plant (different ranges than a field)
   const moistureIdeal = metrics.moisture >= 40 && metrics.moisture <= 70;
-  const tempIdeal = metrics.temperature >= 17 && metrics.temperature <= 24;
+  const tempIdeal = metrics.temperature >= 63 && metrics.temperature <= 75;
 
   let healthLevel: "thriving" | "okay" | "needs-care" = "thriving";
   if (!moistureIdeal && !tempIdeal) healthLevel = "needs-care";
@@ -73,7 +73,7 @@ function HomeGardenPage() {
           ? "Soil is drying — water within 24h."
           : metrics.moisture > 70
             ? "Soil is saturated — let it dry out a day."
-            : metrics.temperature < 17
+            : metrics.temperature < 63
               ? "A bit cool — move toward a warmer spot."
               : "A bit warm — give it some shade.",
       color: "text-[#d4a84a]",
@@ -157,7 +157,7 @@ function HomeGardenPage() {
                 Room Temp
               </div>
               <div className="font-mono-tight text-copper text-sm">
-                {metrics.temperature.toFixed(1)}°C
+                {metrics.temperature.toFixed(1)}°F
               </div>
             </div>
 
@@ -240,7 +240,7 @@ function HomeGardenPage() {
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-5">
                 <Stat label="Soil Moisture" value={metrics.moisture.toFixed(0)} unit="%" accent="cyan" />
-                <Stat label="Room Temp" value={metrics.temperature.toFixed(1)} unit="°C" accent="copper" />
+                <Stat label="Room Temp" value={metrics.temperature.toFixed(1)} unit="°F" accent="copper" />
                 <Stat label="Water Reservoir" value={metrics.waterLevel.toFixed(0)} unit="cm" accent="cyan" />
                 <Stat label="Humidity" value={metrics.humidity.toFixed(0)} unit="%" accent="copper" />
                 <Stat label="Weather" value="Cloudy" accent="copper" />

@@ -76,7 +76,7 @@ const STAGES: Stage[] = [
     box: { x: 40, y: 50, w: 20, h: 30 },
     parts: [
       { name: "Moisture slits", spec: "TDR dielectric · 0–100%" },
-      { name: "Soil temp", spec: "DS18B20 · ±0.5°C" },
+      { name: "Soil temp", spec: "DS18B20 · ±0.9°F" },
       { name: "EC sensor", spec: "0–10 mS/cm fertility index" },
     ],
   },

@@ -195,7 +195,7 @@ function Index() {
               <LiveStat
                 label="Air Temp"
                 value={metrics.temperature.toFixed(1)}
-                unit="°C"
+                unit="°F"
                 accent="copper"
               />
               <LiveStat
@@ -218,7 +218,7 @@ function Index() {
               <LiveStat
                 label="Soil Temp"
                 value={metrics.soilTemperature.toFixed(1)}
-                unit="°C"
+                unit="°F"
                 accent="copper"
               />
               <LiveStat
@@ -292,7 +292,7 @@ function Index() {
               <span className="text-[10px] tracking-[0.2em] uppercase text-copper mt-1.5">Tune</span>
               <div className="flex-1 text-sm bg-copper/10 border border-copper/20 px-4 py-2.5 rounded-sm">
                 Risk: <span className="text-[#7aa84a]">LOW</span> (18/100). Soil temp{" "}
-                <span className="text-copper">18.6°C</span>, moisture{" "}
+                <span className="text-copper">65.5°F</span>, moisture{" "}
                 <span className="text-cyan-data">47%</span>.
               </div>
             </div>

@@ -477,7 +477,7 @@ export default function SoilCompassScene({
               <MetricTag
                 position={[2.8, 1.4, -1.5]}
                 label="Air Temp"
-                value={`${metrics.temperature.toFixed(1)}°C`}
+                value={`${metrics.temperature.toFixed(1)}°F`}
                 color="copper"
               />
               <MetricTag

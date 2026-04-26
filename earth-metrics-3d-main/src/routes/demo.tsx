@@ -23,7 +23,7 @@ export const Route = createFileRoute("/demo")({
   component: DemoPage,
 });
 
-function Sparkline({ values, color = "var(--copper)" }: { values: number[]; color?: string }) {
+function Sparkline({ values, color = "#fb923c" }: { values: number[]; color?: string }) {
   if (values.length === 0) return null;
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -100,8 +100,8 @@ function StatusSummary({ m }: { m: LiveMetrics }) {
     { label: "Healthy", tone: "text-[#7aa84a]" };
 
   const tempStatus =
-    m.temperature < 15 ? { label: "Cool", tone: "text-cyan-data" } :
-    m.temperature > 24 ? { label: "Warm", tone: "text-[#d4a84a]" } :
+    m.temperature < 59 ? { label: "Cool", tone: "text-cyan-data" } :
+    m.temperature > 75 ? { label: "Warm", tone: "text-[#d4a84a]" } :
     { label: "Ideal", tone: "text-[#7aa84a]" };
 
   const recommendation =
@@ -156,9 +156,9 @@ function scoreColor(score: number) {
 }
 
 function computePredictions(m: LiveMetrics) {
-  // Soil Yield — moisture near 55%, temp near 22°C, high humidity all contribute
+  // Soil Yield — moisture near 55%, temp near 72°F, high humidity all contribute
   const yieldMoisture = clamp(100 - Math.abs(m.moisture - 55) * 2.5, 0, 100);
-  const yieldTemp     = clamp(100 - Math.abs(m.temperature - 22) * 5, 0, 100);
+  const yieldTemp     = clamp(100 - Math.abs(m.temperature - 72) * 2.8, 0, 100);
   const yieldHumidity = clamp(m.humidity, 0, 100);
   const yieldWater    = clamp(m.waterLevel * 5, 0, 100);
   const soilYield     = Math.round(0.35 * yieldMoisture + 0.30 * yieldTemp + 0.25 * yieldHumidity + 0.10 * yieldWater);
@@ -235,7 +235,7 @@ function PredictiveSection({ m }: { m: LiveMetrics }) {
         <PredictionCard
           label="Soil Yield Potential"
           score={soilYield}
-          description={`Estimates crop productivity from moisture (${m.moisture.toFixed(0)}%), temperature (${m.temperature.toFixed(1)}°C), and humidity (${m.humidity.toFixed(0)}%).`}
+          description={`Estimates crop productivity from moisture (${m.moisture.toFixed(0)}%), temperature (${m.temperature.toFixed(1)}°F), and humidity (${m.humidity.toFixed(0)}%).`}
         />
         <PredictionCard
           label="Arableness"
@@ -262,7 +262,7 @@ function generateReply(input: string, m: LiveMetrics): string {
       : `Moisture sits at ${m.moisture.toFixed(0)}%. No need to water yet — keep an eye on the next 6 hours.`;
   }
   if (q.includes("temp")) {
-    return `Soil temperature is ${m.temperature.toFixed(1)}°C — ${m.temperature < 15 ? "cool" : m.temperature > 22 ? "warm" : "ideal"} for most plants.`;
+    return `Soil temperature is ${m.temperature.toFixed(1)}°F — ${m.temperature < 59 ? "cool" : m.temperature > 72 ? "warm" : "ideal"} for most plants.`;
   }
   if (q.includes("weather") || q.includes("rain")) {
     return `Current condition: Cloudy. Humidity ${m.humidity.toFixed(0)}%.`;
@@ -273,7 +273,7 @@ function generateReply(input: string, m: LiveMetrics): string {
   if (q.includes("location") || q.includes("gps") || q.includes("where")) {
     return `Sensor located at ${m.gps}, oriented ${m.orientation.toFixed(0)}° from north.`;
   }
-  return `Right now: moisture ${m.moisture.toFixed(0)}%, temp ${m.temperature.toFixed(1)}°C, humidity ${m.humidity.toFixed(0)}%. Cloudy.`;
+  return `Right now: moisture ${m.moisture.toFixed(0)}%, temp ${m.temperature.toFixed(1)}°F, humidity ${m.humidity.toFixed(0)}%. Cloudy.`;
 }
 
 function DemoPage() {
@@ -336,16 +336,16 @@ function DemoPage() {
             unit="%"
             accent="cyan"
           >
-            <Sparkline values={moistureHist} color="var(--cyan-data)" />
+            <Sparkline values={moistureHist} color="#4ade80" />
           </MetricCard>
 
           <MetricCard
             label="Temperature"
             value={metrics.temperature.toFixed(1)}
-            unit="°C"
+            unit="°F"
             accent="copper"
           >
-            <Sparkline values={tempHist} color="var(--copper)" />
+            <Sparkline values={tempHist} color="#fb923c" />
           </MetricCard>
 
           <MetricCard
@@ -379,7 +379,7 @@ function DemoPage() {
           <MetricCard
             label="Soil Temperature"
             value={metrics.soilTemperature.toFixed(1)}
-            unit="°C"
+            unit="°F"
             accent="copper"
           >
             <div className="text-[10px] font-mono-tight text-muted-foreground tracking-wider">
@@ -398,7 +398,7 @@ function DemoPage() {
                 className="h-full transition-all duration-700"
                 style={{
                   width: `${Math.min(100, metrics.methane)}%`,
-                  backgroundColor: metrics.methane > 20 ? "#ef4444" : metrics.methane > 10 ? "#d4a84a" : "var(--copper)",
+                  backgroundColor: metrics.methane > 20 ? "#ef4444" : metrics.methane > 10 ? "#d4a84a" : "#fb923c",
                 }}
               />
             </div>
