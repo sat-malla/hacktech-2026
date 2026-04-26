@@ -67,28 +67,47 @@ CSV_SCHEMA = """
 """
 
 SYSTEM_PROMPT = (
-    "You are an expert agricultural advisor helping farmers make smart, "
-    "data-driven decisions about their crops and soil health. "
-    "You have access to real sensor readings from CSV files. "
-    "Use the schema below to interpret the data correctly.\n\n"
-    f"{CSV_SCHEMA}\n"
-    "Give concrete, actionable advice a 17-year-old can understand. "
-    "IMPORTANT: Do NOT use any markdown formatting. No bold, no asterisks, no bullet points."
+    "You are an AI assistant designed to analyze plant sensor data and provide insights to a general consumer. "
+    "Your goal is to make complex data easy to understand and actionable. "
+
+    "Core Functionality: "
+    "Analyze provided sensor data such as soil moisture, temperature, and light levels along with a knowledge base about plants. "
+    "Generate clear, concise insights and recommendations. "
+    "Avoid technical jargon. Explain findings in simple terms that a regular consumer can easily grasp. "
+    "If a user asks about a plant not present in the sensor data, clearly state that you lack specific data for that plant, "
+    "then provide general care advice for that plant based on your broader knowledge base. "
+    "If the user engages in general conversation without mentioning keywords related to agriculture, data, crops, soil, or similar topics, "
+    "respond as a typical friendly chatbot. "
+
+    "Specific Instructions: "
+    "Your responses must be plain text only. "
+    "Do not use markdown, bullet points, asterisks, triple backticks, bold, italics, or any other special formatting. "
+    "Insights should lead to practical steps the user can take to care for their plants. "
     "Structure your response as short punchy sentences separated by newlines. "
     "Line 1: What the data shows. "
-    "Line 2: Whether it's healthy or not. "
+    "Line 2: Whether it is healthy or not. "
     "Line 3: What to do right now. "
-    "Keep total response under 500 characters."
-    "If asked about specific readings, quote the actual values from the data. "
-    "Always explain your reasoning briefly. "
-    "If the user asks about a plant not in their sensor data, say you lack data for that plant "
-    "and give general advice for that plant only. "
-    "Do NOT reference the user's current sensor readings when answering about a different plant. "
-    "Never ask clarifying questions. Always give a direct answer. Don't add unnecessary data or explanations."
-    "If the user asks about anything else not related to agriculture, soil, data, or anything about the app, "
-    "just answer it in a normal conversational but cheerful way. "
-    "For example, if the user says 'Hello!' just greet them back warmly and ask how you can help with their farm today. "
-    "Do NOT output sensor data if the question has nothing to do with crops or soil."
+    "Keep total response under 500 characters. "
+    "Never ask clarifying questions. Always give a direct answer. "
+    "Do not add unnecessary data or explanations. "
+
+    "Handling sensor data: "
+    "Always confirm whether you have sensor data for the specific plant mentioned. "
+    "When providing general advice, make it clear that it is not based on specific sensor readings. "
+    "Do NOT reference the user's current sensor readings when answering about a plant not in the data. "
+
+    "Use the schema below to interpret sensor data correctly.\n\n"
+    f"{CSV_SCHEMA}\n"
+)
+
+NON_AGRI_PROMPT = (
+    "You are SoilLink, a friendly AI assistant for farmers. "
+    "The user is making general conversation unrelated to agriculture or sensor data. "
+    "Respond naturally and conversationally. "
+    "If they say hello, greet them warmly. "
+    "If they need help, ask what they need help with. "
+    "Keep it short, friendly, and natural. "
+    "No markdown, no bullet points, plain text only."
 )
 
 def clean(text: str) -> str:
@@ -109,6 +128,51 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     message: str
+
+def load_csv_context(path: str) -> str:
+    parts = []
+    if not os.path.exists(path):
+        return ""
+    for fname in sorted(os.listdir(path)):
+        if fname.endswith(".csv"):
+            with open(os.path.join(path, fname)) as f:
+                parts.append(f"=== {fname} ===\n{f.read()}")
+    return "\n\n".join(parts)
+
+user_context = load_csv_context("../ml-prediction/csv_output")
+knowledge_context = load_csv_context("data")
+
+def classify_intent(message: str) -> str:
+    msg = message.lower().strip()
+    
+    # Data intent — user asking about THEIR current conditions
+    data_patterns = [
+        r"\bmy (soil|crop|plant|field|farm|sensor|data|reading)\b",
+        r"\b(should i|do i need to|when should i) (water|irrigate|fertilize|harvest|plant)\b",
+        r"\bhow (is|are) my\b",
+        r"\bwhat('s| is) (my|the current|today's)\b",
+        r"\b(today|right now|currently|latest|recent)\b",
+        r"\b(too (wet|dry|hot|cold)|healthy|unhealthy)\b",
+        r"\breadings?\b",
+        r"\bsensor\b",
+    ]
+    
+    # Agri intent — general plant/farming question, no personal data needed
+    agri_patterns = [
+        r"\b(how (do|to|can)|tips?|advice|guide|best way)\b.*(plant|grow|care|water|fertilize|harvest)\b",
+        r"\b(what (does|do)|why (does|do|is|are))\b.*(plant|soil|crop|flower|vegetable|fruit)\b",
+        r"\b(plant|grow|farm|garden|crop|soil|seed|harvest|fertilize|irrigate|compost|pest|disease)\b",
+    ]
+    
+    for pattern in data_patterns:
+        if re.search(pattern, msg):
+            return "data"
+    
+    for pattern in agri_patterns:
+        if re.search(pattern, msg):
+            return "agri"
+    
+    return "chat"
 
 @app.post("/chat")
 async def chat(req: ChatRequest):
@@ -132,24 +196,29 @@ async def chat(req: ChatRequest):
     user_context = "\n\n".join(user_data_parts) if user_data_parts else "No user sensor data available."
     knowledge_context = "\n\n".join(knowledge_parts) if knowledge_parts else "No reference data available."
 
-    if is_agri_query(req.message):
-        messages_payload = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": (
-                f"Question: {req.message}\n\n"
-                f"=== USER'S ACTUAL SENSOR READINGS ===\n{user_context}\n\n"
-                f"=== REFERENCE KNOWLEDGE BASE ===\n{knowledge_context}\n=== End ==="
-            )},
-        ]
+    intent = classify_intent(req.message)
+
+    if intent == "data":
+        user_content = (
+            f"Question: {req.message}\n\n"
+            f"=== USER'S ACTUAL SENSOR READINGS ===\n{user_context}\n\n"
+            f"=== REFERENCE KNOWLEDGE BASE ===\n{knowledge_context}\n=== End ==="
+        )
+        system = SYSTEM_PROMPT
+    elif intent == "agri":
+        user_content = (
+            f"Question: {req.message}\n\n"
+            f"=== REFERENCE KNOWLEDGE BASE ===\n{knowledge_context}\n=== End ==="
+        )
+        system = SYSTEM_PROMPT
     else:
-        messages_payload = [
-            {"role": "system", "content": (
-                "You are SoilLink, a friendly AI assistant for farmers. "
-                "You help with agricultural questions but can also chat normally. "
-                "Be warm, helpful, and concise. No markdown formatting."
-            )},
-            {"role": "user", "content": req.message},
-        ]
+        user_content = req.message
+        system = NON_AGRI_PROMPT
+
+    messages_payload = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user_content},
+    ]
     
     full_message = ""
     async with httpx.AsyncClient(timeout=k2_timeout) as client:
