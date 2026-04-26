@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 const NAV = [
   { to: "/" as const, label: "Dashboard" },
   { to: "/plan" as const, label: "Plan" },
-  { to: "/scan" as const, label: "Scan" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
