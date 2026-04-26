@@ -166,7 +166,7 @@ function HomeGardenPage() {
                 Humidity
               </div>
               <div className="font-mono-tight text-copper text-sm">
-                {metrics.weatherHumidity.toFixed(0)}%
+                {metrics.humidity.toFixed(0)}%
               </div>
             </div>
 
@@ -242,8 +242,8 @@ function HomeGardenPage() {
                 <Stat label="Soil Moisture" value={metrics.moisture.toFixed(0)} unit="%" accent="cyan" />
                 <Stat label="Room Temp" value={metrics.temperature.toFixed(1)} unit="°C" accent="copper" />
                 <Stat label="Water Reservoir" value={metrics.waterLevel.toFixed(0)} unit="cm" accent="cyan" />
-                <Stat label="Humidity" value={metrics.weatherHumidity.toFixed(0)} unit="%" accent="copper" />
-                <Stat label="Light" value={metrics.weather} accent="copper" />
+                <Stat label="Humidity" value={metrics.humidity.toFixed(0)} unit="%" accent="copper" />
+                <Stat label="Weather" value="Cloudy" accent="copper" />
                 <Stat label="Probe Depth" value={metrics.depth.toFixed(0)} unit="cm" accent="cyan" />
               </div>
               <div className="mt-5 pt-4 border-t border-border/60 flex items-center justify-between">

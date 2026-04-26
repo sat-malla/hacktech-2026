@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import { useLiveMetrics, type LiveMetrics } from "@/hooks/useLiveMetrics";
+import HistoryChart from "@/components/HistoryChart";
 
 export const Route = createFileRoute("/demo")({
   head: () => ({
@@ -126,11 +127,11 @@ function StatusSummary({ m }: { m: LiveMetrics }) {
         </div>
         <div>
           <div className="text-[10px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground mb-1">Weather</div>
-          <div className="font-display font-light text-lg">{m.weather}</div>
+          <div className="font-display font-light text-lg">Cloudy</div>
         </div>
         <div>
-          <div className="text-[10px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground mb-1">Location</div>
-          <div className="font-display font-light text-lg">{m.gps}</div>
+          <div className="text-[10px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground mb-1">Type</div>
+          <div className="font-display font-light text-lg">Tomato</div>
         </div>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed border-t border-border/60 pt-4">
@@ -139,6 +140,119 @@ function StatusSummary({ m }: { m: LiveMetrics }) {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Prediction helpers
+// ---------------------------------------------------------------------------
+
+function clamp(v: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function scoreColor(score: number) {
+  if (score >= 70) return { text: "#4ade80", label: "Good" };
+  if (score >= 40) return { text: "#fb923c", label: "Moderate" };
+  return { text: "#ef4444", label: "Poor" };
+}
+
+function computePredictions(m: LiveMetrics) {
+  // Soil Yield — moisture near 55%, temp near 22°C, high humidity all contribute
+  const yieldMoisture = clamp(100 - Math.abs(m.moisture - 55) * 2.5, 0, 100);
+  const yieldTemp     = clamp(100 - Math.abs(m.temperature - 22) * 5, 0, 100);
+  const yieldHumidity = clamp(m.humidity, 0, 100);
+  const yieldWater    = clamp(m.waterLevel * 5, 0, 100);
+  const soilYield     = Math.round(0.35 * yieldMoisture + 0.30 * yieldTemp + 0.25 * yieldHumidity + 0.10 * yieldWater);
+
+  // Arableness — low methane, moisture near 55%, stable drainage all help
+  const arableMethane  = clamp(100 - m.methane * 3, 0, 100);
+  const arableMoisture = clamp(100 - Math.abs(m.moisture - 55) * 2, 0, 100);
+  const arableDrain    = clamp(80 - Math.abs(m.drainage) * 2, 0, 100);
+  const arableness     = Math.round(0.35 * arableMethane + 0.45 * arableMoisture + 0.20 * arableDrain);
+
+  // Organic Matter — moderate methane (5–15%) signals active decomposition
+  const organic = Math.round(
+    m.methane < 5
+      ? m.methane * 8
+      : m.methane < 15
+        ? 40 + (m.methane - 5) * 4
+        : clamp(80 - (m.methane - 15) * 3, 0, 100)
+  );
+
+  return { soilYield, arableness, organic };
+}
+
+function PredictionCard({
+  label,
+  score,
+  description,
+}: {
+  label: string;
+  score: number;
+  description: string;
+}) {
+  const { text, label: tier } = scoreColor(score);
+  return (
+    <div className="border border-border bg-card/40 p-5 rounded-sm flex flex-col gap-3 hover:border-copper/30 transition-colors">
+      <div className="text-[10px] font-mono-tight tracking-[0.25em] uppercase text-muted-foreground">
+        {label}
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="font-display font-light text-4xl" style={{ color: text }}>
+          {score}
+        </span>
+        <span className="text-xs font-mono-tight text-muted-foreground">/ 100</span>
+        <span className="ml-auto text-[10px] font-mono-tight tracking-[0.2em] uppercase" style={{ color: text }}>
+          {tier}
+        </span>
+      </div>
+      <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${score}%`, backgroundColor: text }}
+        />
+      </div>
+      <p className="text-[11px] font-mono-tight text-muted-foreground leading-relaxed">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function PredictiveSection({ m }: { m: LiveMetrics }) {
+  const { soilYield, arableness, organic } = computePredictions(m);
+  return (
+    <div className="mt-4">
+      <div className="flex items-center gap-3 mb-3 px-1">
+        <div className="text-[10px] font-mono-tight tracking-[0.3em] uppercase text-copper">
+          ◦ Predictive Analytics
+        </div>
+        <div className="flex-1 h-px bg-border/60" />
+        <span className="text-[9px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground">
+          derived from live sensor data
+        </span>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <PredictionCard
+          label="Soil Yield Potential"
+          score={soilYield}
+          description={`Estimates crop productivity from moisture (${m.moisture.toFixed(0)}%), temperature (${m.temperature.toFixed(1)}°C), and humidity (${m.humidity.toFixed(0)}%).`}
+        />
+        <PredictionCard
+          label="Arableness"
+          score={arableness}
+          description={`Suitability for cultivation based on methane (${m.methane.toFixed(1)}%), moisture, and drainage (${m.drainage.toFixed(1)}%).`}
+        />
+        <PredictionCard
+          label="Organic Matter Index"
+          score={organic}
+          description={`Estimates organic activity from MQ2 methane reading (${m.methane.toFixed(1)}%). Moderate methane signals active decomposition.`}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 
 function generateReply(input: string, m: LiveMetrics): string {
   const q = input.toLowerCase();
@@ -151,7 +265,7 @@ function generateReply(input: string, m: LiveMetrics): string {
     return `Soil temperature is ${m.temperature.toFixed(1)}°C — ${m.temperature < 15 ? "cool" : m.temperature > 22 ? "warm" : "ideal"} for most plants.`;
   }
   if (q.includes("weather") || q.includes("rain")) {
-    return `Current condition: ${m.weather.toLowerCase()}. Humidity ${m.weatherHumidity.toFixed(0)}%, wind ${m.weatherWind.toFixed(1)} km/h.`;
+    return `Current condition: Cloudy. Humidity ${m.humidity.toFixed(0)}%.`;
   }
   if (q.includes("depth") || q.includes("level")) {
     return `Probe depth ${m.depth.toFixed(0)} cm. Water table detected at ${m.waterLevel.toFixed(0)} cm below surface.`;
@@ -159,7 +273,7 @@ function generateReply(input: string, m: LiveMetrics): string {
   if (q.includes("location") || q.includes("gps") || q.includes("where")) {
     return `Sensor located at ${m.gps}, oriented ${m.orientation.toFixed(0)}° from north.`;
   }
-  return `Right now: moisture ${m.moisture.toFixed(0)}%, temp ${m.temperature.toFixed(1)}°C, water level ${m.waterLevel.toFixed(0)} cm. ${m.weather}.`;
+  return `Right now: moisture ${m.moisture.toFixed(0)}%, temp ${m.temperature.toFixed(1)}°C, humidity ${m.humidity.toFixed(0)}%. Cloudy.`;
 }
 
 function DemoPage() {
@@ -235,12 +349,17 @@ function DemoPage() {
           </MetricCard>
 
           <MetricCard
-            label="Water Level"
-            value={metrics.waterLevel.toFixed(0)}
-            unit="cm"
+            label="Drainage"
+            value={metrics.drainage.toFixed(1)}
+            unit="%"
             accent="cyan"
           >
-            <WaterGauge level={metrics.waterLevel} />
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1">
+              <div
+                className="h-full bg-cyan-data transition-all duration-700"
+                style={{ width: `${Math.min(100, Math.abs(metrics.drainage))}%` }}
+              />
+            </div>
           </MetricCard>
 
           <MetricCard
@@ -269,13 +388,29 @@ function DemoPage() {
           </MetricCard>
 
           <MetricCard
-            label="Water Level"
-            value={metrics.waterLevel.toFixed(0)}
-            unit="cm"
-            accent="cyan"
+            label="Methane (MQ2)"
+            value={metrics.methane.toFixed(1)}
+            unit="%"
+            accent="copper"
           >
-            <WaterGauge level={metrics.waterLevel} />
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1">
+              <div
+                className="h-full transition-all duration-700"
+                style={{
+                  width: `${Math.min(100, metrics.methane)}%`,
+                  backgroundColor: metrics.methane > 20 ? "#ef4444" : metrics.methane > 10 ? "#d4a84a" : "var(--copper)",
+                }}
+              />
+            </div>
           </MetricCard>
+        </div>
+
+        {/* Predictive analytics */}
+        <PredictiveSection m={metrics} />
+
+        {/* History chart */}
+        <div className="mt-4">
+          <HistoryChart />
         </div>
 
         {/* Chatbot */}

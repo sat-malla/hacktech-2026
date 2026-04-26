@@ -145,6 +145,13 @@ function Index() {
             {/* Subtle texture overlay */}
             <div className="absolute inset-0 organic-noise opacity-25 pointer-events-none" />
 
+            {/* Prototype label */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+              <span className="text-[9px] font-mono-tight tracking-[0.35em] uppercase text-muted-foreground/50 border border-border/40 rounded-sm px-2.5 py-1">
+                Prototype
+              </span>
+            </div>
+
             {/* Soft risk-tinted vignette */}
             <div
               className="absolute inset-0 pointer-events-none mix-blend-soft-light"
@@ -199,31 +206,31 @@ function Index() {
               />
               <LiveStat
                 label="Weather"
-                value={metrics.weather}
+                value="Cloudy"
                 accent="copper"
               />
               <LiveStat
                 label="Humidity"
-                value={metrics.weatherHumidity.toFixed(0)}
+                value={metrics.humidity.toFixed(0)}
                 unit="%"
                 accent="cyan"
               />
               <LiveStat
-                label="Wind"
-                value={metrics.weatherWind.toFixed(1)}
-                unit="km/h"
+                label="Soil Temp"
+                value={metrics.soilTemperature.toFixed(1)}
+                unit="°C"
                 accent="copper"
               />
               <LiveStat
-                label="Probe Depth"
-                value={metrics.depth.toFixed(0)}
-                unit="cm"
+                label="Methane"
+                value={metrics.methane.toFixed(1)}
+                unit="%"
                 accent="copper"
               />
               <LiveStat
-                label="Heading"
-                value={metrics.orientation.toFixed(0)}
-                unit="°N"
+                label="Drainage"
+                value={metrics.drainage.toFixed(1)}
+                unit="%"
                 accent="cyan"
               />
             </div>

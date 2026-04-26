@@ -7,6 +7,7 @@ export interface LiveMetrics {
   waterLevel: number;
   drainage: number;
   humidity: number;
+  methane: number;
   weather: string;
   weatherHumidity: number;
   weatherWind: number;
@@ -27,6 +28,7 @@ interface Reading {
   water_level: number;
   drainage: number;
   humidity: number | null;
+  methane: number | null;
   plant_species: string;
 }
 
@@ -41,6 +43,7 @@ const PLACEHOLDER: LiveMetrics = {
   waterLevel: 0,
   drainage: 0,
   humidity: 0,
+  methane: 0,
   weather: "—",
   weatherHumidity: 0,
   weatherWind: 0,
@@ -65,6 +68,7 @@ function toMetrics(rows: Reading[], prev: LiveMetrics): LiveMetrics {
     waterLevel: latest.water_level,
     drainage: latest.drainage,
     humidity: latest.humidity ?? 0,
+    methane: latest.methane ?? 0,
     history: history.slice(-HISTORY_SIZE),
     stale: false,
   };

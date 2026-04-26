@@ -36,13 +36,22 @@ function generateHistory(): Point[] {
   });
 }
 
+// Explicit hex colors — CSS vars like --copper and --cyan-data resolve to white in
+// this monochrome theme, making every series the same shade. These are distinct and
+// visible on the dark background regardless of theme variables.
+const SERIES_COLORS = {
+  moisture:    "#4ade80",   // green
+  temperature: "#fb923c",   // orange
+  waterLevel:  "#60a5fa",   // blue
+} as const;
+
 const SERIES_META: Record<
   SeriesKey,
-  { label: string; unit: string; color: string; cssVar: string }
+  { label: string; unit: string; color: string }
 > = {
-  moisture: { label: "Moisture", unit: "%", color: "var(--cyan-data)", cssVar: "cyan-data" },
-  temperature: { label: "Temperature", unit: "°C", color: "var(--copper)", cssVar: "copper" },
-  waterLevel: { label: "Water Level", unit: "cm", color: "#d4a84a", cssVar: "" },
+  moisture:    { label: "Moisture",    unit: "%",  color: SERIES_COLORS.moisture },
+  temperature: { label: "Temperature", unit: "°C", color: SERIES_COLORS.temperature },
+  waterLevel:  { label: "Water Level", unit: "cm", color: SERIES_COLORS.waterLevel },
 };
 
 export default function HistoryChart() {
@@ -100,13 +109,6 @@ export default function HistoryChart() {
       .map((d, i) => `${i === 0 ? "M" : "L"} ${xFor(i)} ${yFor(d[key])}`)
       .join(" ");
 
-  const areaPath = (key: SeriesKey) => {
-    const top = data
-      .map((d, i) => `${i === 0 ? "M" : "L"} ${xFor(i)} ${yFor(d[key])}`)
-      .join(" ");
-    return `${top} L ${xFor(data.length - 1)} ${PAD.top + innerH} L ${xFor(0)} ${PAD.top + innerH} Z`;
-  };
-
   const yTicks = 4;
   const tickValues = Array.from(
     { length: yTicks + 1 },
@@ -160,22 +162,6 @@ export default function HistoryChart() {
           className="w-full h-auto min-w-[600px]"
           onMouseLeave={() => setHover(null)}
         >
-          <defs>
-            {(Object.keys(SERIES_META) as SeriesKey[]).map((k) => (
-              <linearGradient
-                key={k}
-                id={`grad-${k}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="0%" stopColor={SERIES_META[k].color} stopOpacity="0.18" />
-                <stop offset="100%" stopColor={SERIES_META[k].color} stopOpacity="0" />
-              </linearGradient>
-            ))}
-          </defs>
-
           {/* Y grid */}
           {tickValues.map((v, i) => (
             <g key={i}>
@@ -218,32 +204,31 @@ export default function HistoryChart() {
             </text>
           ))}
 
-          {/* Area fills + lines */}
+          {/* Lines only — no area fills */}
           {(Object.keys(SERIES_META) as SeriesKey[]).map((k) => {
             if (!active[k]) return null;
             const meta = SERIES_META[k];
             return (
               <g key={k}>
-                <path d={areaPath(k)} fill={`url(#grad-${k})`} />
                 <path
                   d={linePath(k)}
                   fill="none"
                   stroke={meta.color}
-                  strokeWidth={1.6}
+                  strokeWidth={1.5}
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeOpacity="0.85"
                 />
-                {data.map((d, i) => (
+                {hover !== null && (
                   <circle
-                    key={i}
-                    cx={xFor(i)}
-                    cy={yFor(d[k])}
-                    r={hover === i ? 3.5 : 2}
+                    cx={xFor(hover)}
+                    cy={yFor(data[hover][k])}
+                    r={3.5}
                     fill="var(--background)"
                     stroke={meta.color}
-                    strokeWidth={1.4}
+                    strokeWidth={1.5}
                   />
-                ))}
+                )}
               </g>
             );
           })}
@@ -327,7 +312,7 @@ export default function HistoryChart() {
                 <span className="text-xs text-muted-foreground ml-1">{meta.unit}</span>
               </div>
               <div className="text-[10px] font-mono-tight text-muted-foreground mt-0.5">
-                {trend >= 0 ? "↑" : "↓"} {Math.abs(trend).toFixed(1)}{meta.unit} year-over-year
+                {trend >= 0 ? "↑" : "↓"} {Math.abs(trend).toFixed(1)}{meta.unit} {isLive ? "over period" : "year-over-year"}
               </div>
             </div>
           );

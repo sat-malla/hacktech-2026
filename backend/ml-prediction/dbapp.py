@@ -163,4 +163,6 @@ def create_log_record(data: dict[str, Any]) -> dict:
     temp_c = (renamed["air_temperature"] - 32) / 1.8
     renamed["humidity"] = max(0.0, min(100.0, 0.5 * renamed["soil_moisture"] + (30 - temp_c) * 0.7 + 25))
 
+    renamed["methane"] = float(data.get("mq2_percent") or 0)
+
     return db.create("readings", renamed)
