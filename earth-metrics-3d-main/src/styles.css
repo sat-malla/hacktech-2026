@@ -1,0 +1,175 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Soil Compass — minimalist dark design system.
+ * Black canvas, warm copper/amber accent, cool cyan for live data.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-copper: var(--copper);
+  --color-copper-glow: var(--copper-glow);
+  --color-cyan-data: var(--cyan-data);
+  --color-soil-deep: var(--soil-deep);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 40px -10px var(--copper-glow);
+  --gradient-radial: radial-gradient(ellipse at center, oklch(0.18 0.02 60 / 0.4), transparent 70%);
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* Pure black canvas, white text — minimal */
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+
+  --card: oklch(0.05 0 0);
+  --card-foreground: oklch(1 0 0);
+
+  --popover: oklch(0.05 0 0);
+  --popover-foreground: oklch(1 0 0);
+
+  /* Monochrome — accents reduced to white for minimal look */
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --copper: oklch(1 0 0);
+  --copper-glow: oklch(1 0 0 / 0.35);
+
+  --secondary: oklch(0.1 0 0);
+  --secondary-foreground: oklch(1 0 0);
+
+  --muted: oklch(0.08 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+
+  --accent: oklch(0.12 0 0);
+  --accent-foreground: oklch(1 0 0);
+
+  --destructive: oklch(0.6 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.18 0 0);
+  --input: oklch(0.12 0 0);
+  --ring: oklch(0.7 0.13 140);
+
+  /* Data accent — also white for monochrome theme */
+  --cyan-data: oklch(1 0 0);
+  --soil-deep: oklch(0.05 0 0);
+
+  --chart-1: oklch(0.7 0.13 140);
+  --chart-2: oklch(0.78 0.09 220);
+  --chart-3: oklch(0.62 0.14 110);
+  --chart-4: oklch(0.55 0.12 60);
+  --chart-5: oklch(0.45 0.08 50);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .font-mono-tight {
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+  }
+
+  .topo-grid {
+    background-image:
+      radial-gradient(oklch(0.7 0.13 140 / 0.05) 1px, transparent 1px),
+      radial-gradient(oklch(0.7 0.13 140 / 0.04) 1px, transparent 1px);
+    background-size: 48px 48px, 96px 96px;
+    background-position: 0 0, 24px 24px;
+  }
+
+  .radial-vignette {
+    background:
+      radial-gradient(ellipse at center, transparent 40%, oklch(0.08 0.015 95) 100%);
+  }
+
+  .organic-noise {
+    background-image:
+      radial-gradient(ellipse at 20% 30%, oklch(0.7 0.13 140 / 0.08), transparent 40%),
+      radial-gradient(ellipse at 80% 70%, oklch(0.55 0.12 60 / 0.06), transparent 50%);
+  }
+
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+  .pulse-ring {
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+
+  @keyframes fade-up {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up {
+    animation: fade-up 0.8s ease-out both;
+  }
+
+  @keyframes plant-sway {
+    0%, 100% { transform: rotate(-1.2deg); }
+    50% { transform: rotate(1.2deg); }
+  }
+  .plant-sway {
+    transform-origin: 50% 95%;
+    animation: plant-sway 6s ease-in-out infinite;
+  }
+}

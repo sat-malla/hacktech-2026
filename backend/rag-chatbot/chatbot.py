@@ -14,6 +14,18 @@ BACKBOARD_API_KEY = os.getenv("BACKBOARD_API_KEY")
 BASE_URL = "https://app.backboard.io/api"
 HEADERS = {"X-API-Key": BACKBOARD_API_KEY}
 
+AGRI_KEYWORDS = {
+    "soil", "moisture", "nitrogen", "humidity", "temperature", "crop", "plant",
+    "water", "irrigat", "fertiliz", "harvest", "seed", "grow", "farm", "field",
+    "sensor", "data", "reading", "level", "healthy", "pH", "nutrient", "root",
+    "leaf", "yield", "pest", "disease", "compost", "drainage", "tomato", "lettuce",
+    "pepper", "cucumber", "carrot", "spinach", "broccoli", "raspberry", "guava"
+}
+
+def is_agri_query(message: str) -> bool:
+    msg_lower = message.lower()
+    return any(keyword in msg_lower for keyword in AGRI_KEYWORDS)
+
 def clean(text: str) -> str:
     if "</think>" in text:
         text = text.split("</think>")[-1]
@@ -73,6 +85,10 @@ SYSTEM_PROMPT = (
     "and give general advice for that plant only. "
     "Do NOT reference the user's current sensor readings when answering about a different plant. "
     "Never ask clarifying questions. Always give a direct answer. Don't add unnecessary data or explanations."
+    "If the user asks about anything else not related to agriculture, soil, data, or anything about the app, "
+    "just answer it in a normal conversational but cheerful way. "
+    "For example, if the user says 'Hello!' just greet them back warmly and ask how you can help with their farm today. "
+    "Do NOT output sensor data if the question has nothing to do with crops or soil."
 )
 
 def clean(text: str) -> str:
@@ -116,15 +132,25 @@ async def chat(req: ChatRequest):
     user_context = "\n\n".join(user_data_parts) if user_data_parts else "No user sensor data available."
     knowledge_context = "\n\n".join(knowledge_parts) if knowledge_parts else "No reference data available."
 
-    messages_payload = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": (
-            f"Question: {req.message}\n\n"
-            f"=== USER'S ACTUAL SENSOR READINGS (answer primarily from this) ===\n{user_context}\n\n"
-            f"=== REFERENCE KNOWLEDGE BASE (use only to provide context or healthy ranges) ===\n{knowledge_context}\n"
-            f"=== End ==="
-        )},
-    ]
+    if is_agri_query(req.message):
+        messages_payload = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": (
+                f"Question: {req.message}\n\n"
+                f"=== USER'S ACTUAL SENSOR READINGS ===\n{user_context}\n\n"
+                f"=== REFERENCE KNOWLEDGE BASE ===\n{knowledge_context}\n=== End ==="
+            )},
+        ]
+    else:
+        messages_payload = [
+            {"role": "system", "content": (
+                "You are SoilLink, a friendly AI assistant for farmers. "
+                "You help with agricultural questions but can also chat normally. "
+                "Be warm, helpful, and concise. No markdown formatting."
+            )},
+            {"role": "user", "content": req.message},
+        ]
+    
     full_message = ""
     async with httpx.AsyncClient(timeout=k2_timeout) as client:
         async with client.stream(
