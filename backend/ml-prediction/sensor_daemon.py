@@ -18,15 +18,16 @@ def fetch_loop():
     while True:
         try:
             data = requests.get(PATH).json()
+            print(data)
             with _lock:
                 _buffer.append(data)
-            
+            print("Here")
             record = dbapp.create_log_record(data)
             #print(data)
-            print(record)
+            print("record")
         except Exception as e:
             print(f"fetch error: {e}")
-        time.sleep(30)
+        time.sleep(2)
 
 
 def query_dataframe() -> pd.DataFrame:

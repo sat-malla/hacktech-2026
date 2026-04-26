@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 export interface LiveMetrics {
   moisture: number;
   temperature: number;
+  soilTemperature: number;
   waterLevel: number;
+  drainage: number;
+  humidity: number;
   weather: string;
   weatherHumidity: number;
   weatherWind: number;
@@ -11,67 +14,89 @@ export interface LiveMetrics {
   depth: number;
   gps: string;
   history: { moisture: number; temperature: number }[];
+  stale: boolean;
 }
 
-const WEATHER_CONDITIONS = ["Clear", "Cloudy", "Light rain", "Overcast", "Sunny"];
-
-function clamp(v: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, v));
+interface Reading {
+  id: number;
+  timestamp: string;
+  monitor_id: number;
+  soil_moisture: number;
+  air_temperature: number;
+  soil_temperature: number;
+  water_level: number;
+  drainage: number;
+  humidity: number | null;
+  plant_species: string;
 }
 
-function drift(value: number, amount: number, min: number, max: number) {
-  const next = value + (Math.random() - 0.5) * amount;
-  return clamp(next, min, max);
+const API_BASE = "http://localhost:8081";
+const POLL_MS = 5_000;
+const HISTORY_SIZE = 20;
+
+const PLACEHOLDER: LiveMetrics = {
+  moisture: 0,
+  temperature: 0,
+  soilTemperature: 0,
+  waterLevel: 0,
+  drainage: 0,
+  humidity: 0,
+  weather: "—",
+  weatherHumidity: 0,
+  weatherWind: 0,
+  orientation: 0,
+  depth: 0,
+  gps: "—",
+  history: Array.from({ length: HISTORY_SIZE }, () => ({ moisture: 0, temperature: 0 })),
+  stale: true,
+};
+
+function toMetrics(rows: Reading[], prev: LiveMetrics): LiveMetrics {
+  if (!rows.length) return prev;
+  const latest = rows[0];
+  const chrono = [...rows].reverse();
+  const history = chrono.map((r) => ({ moisture: r.soil_moisture, temperature: r.air_temperature }));
+  while (history.length < HISTORY_SIZE) history.unshift(history[0]);
+  return {
+    ...prev,
+    moisture: latest.soil_moisture,
+    temperature: latest.air_temperature,
+    soilTemperature: latest.soil_temperature,
+    waterLevel: latest.water_level,
+    drainage: latest.drainage,
+    humidity: latest.humidity ?? 0,
+    history: history.slice(-HISTORY_SIZE),
+    stale: false,
+  };
 }
 
-export function useLiveMetrics(intervalMs = 1800): LiveMetrics {
-  const [m, setM] = useState<LiveMetrics>({
-    moisture: 42,
-    temperature: 18.4,
-    waterLevel: 26,
-    weather: "Clear",
-    weatherHumidity: 64,
-    weatherWind: 8,
-    orientation: 142,
-    depth: 45,
-    gps: "52.37°N · 4.89°E",
-    history: Array.from({ length: 20 }, (_, i) => ({
-      moisture: 40 + Math.sin(i / 3) * 5,
-      temperature: 18 + Math.sin(i / 4) * 1.2,
-    })),
-  });
+export function useLiveMetrics(_intervalMs?: number): LiveMetrics {
+  const [metrics, setMetrics] = useState<LiveMetrics>(PLACEHOLDER);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setM((prev) => {
-        const moisture = drift(prev.moisture, 2.5, 25, 75);
-        const temperature = drift(prev.temperature, 0.4, 12, 26);
-        const waterLevel = drift(prev.waterLevel, 1.2, 10, 60);
-        const orientation = (prev.orientation + (Math.random() - 0.5) * 4 + 360) % 360;
-        const depth = drift(prev.depth, 0.6, 30, 70);
-        const weather =
-          Math.random() < 0.06
-            ? WEATHER_CONDITIONS[Math.floor(Math.random() * WEATHER_CONDITIONS.length)]
-            : prev.weather;
-        const weatherHumidity = drift(prev.weatherHumidity, 3, 40, 95);
-        const weatherWind = drift(prev.weatherWind, 1.5, 0, 25);
+    let cancelled = false;
 
-        return {
-          moisture,
-          temperature,
-          waterLevel,
-          weather,
-          weatherHumidity,
-          weatherWind,
-          orientation,
-          depth,
-          gps: prev.gps,
-          history: [...prev.history.slice(1), { moisture, temperature }],
-        };
-      });
-    }, intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
+    async function poll() {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/db/readings?order_by=timestamp&order_desc=true&limit=${HISTORY_SIZE}`
+        );
+        if (!res.ok || cancelled) return;
+        const json: { success: boolean; data: Reading[] } = await res.json();
+        const rows = json.data ?? [];
+        if (rows.length) setMetrics((prev) => toMetrics(rows, prev));
+      } catch (e) {
+        console.error("[useLiveMetrics] poll failed:", e);
+      }
+    }
 
-  return m;
+    poll();
+    const timer = setInterval(poll, POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
+
+  return metrics;
 }

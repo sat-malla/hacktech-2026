@@ -39,7 +39,7 @@ from typing import Any
 from dotenv import load_dotenv
 from supabase import Client, create_client
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / ".env", override=True)
 
 _REMOVED = os.getenv("REMOVED")
 _REMOVED = os.getenv("REMOVED")
@@ -128,8 +128,8 @@ class SupabaseConnector:
         url: str | None = None,
         key: str | None = None,
     ) -> None:
-        resolved_url = _REMOVED#url or os.environ.get("SUPABASE_URL") or 
-        resolved_key = _REMOVED#key or os.environ.get("SUPABASE_API_KEY") or 
+        resolved_url = os.environ.get("SUPABASE_URL")
+        resolved_key = os.environ.get("SUPABASE_API_KEY") 
 
         if not resolved_url:
             raise EnvironmentError(

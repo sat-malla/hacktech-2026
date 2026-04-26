@@ -202,9 +202,11 @@ function DemoPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-data pulse-ring" />
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${metrics.stale ? "bg-[#d4a84a]" : "bg-cyan-data pulse-ring"}`}
+            />
             <span className="text-[10px] font-mono-tight tracking-[0.25em] uppercase text-muted-foreground">
-              Live · Sensor 01 · {metrics.gps}
+              {metrics.stale ? "Stale · last known values" : `Live · Sensor 01 · ${metrics.gps}`}
             </span>
           </div>
         </div>
@@ -241,45 +243,38 @@ function DemoPage() {
             <WaterGauge level={metrics.waterLevel} />
           </MetricCard>
 
-          <MetricCard label="Weather" value={metrics.weather} accent="copper">
-            <div className="flex gap-4 text-[10px] font-mono-tight text-muted-foreground tracking-wider">
-              <span>HUM {metrics.weatherHumidity.toFixed(0)}%</span>
-              <span>WIND {metrics.weatherWind.toFixed(1)}km/h</span>
-            </div>
-          </MetricCard>
-
           <MetricCard
-            label="Orientation"
-            value={metrics.orientation.toFixed(0)}
-            unit="° N"
+            label="Humidity (predicted)"
+            value={metrics.humidity.toFixed(0)}
+            unit="%"
             accent="cyan"
           >
-            <div className="text-[10px] font-mono-tight text-muted-foreground tracking-wider">
-              Compass heading
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1">
+              <div
+                className="h-full bg-cyan-data transition-all duration-700"
+                style={{ width: `${Math.min(100, metrics.humidity)}%` }}
+              />
             </div>
           </MetricCard>
 
           <MetricCard
-            label="Probe Depth"
-            value={metrics.depth.toFixed(0)}
-            unit="cm"
+            label="Soil Temperature"
+            value={metrics.soilTemperature.toFixed(1)}
+            unit="°C"
             accent="copper"
           >
-            <div className="flex gap-1 mt-1">
-              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <div
-                  key={i}
-                  className="flex-1 h-4 rounded-sm"
-                  style={{
-                    backgroundColor:
-                      i / 8 < metrics.depth / 70
-                        ? "var(--copper)"
-                        : "var(--muted)",
-                    opacity: i / 8 < metrics.depth / 70 ? 1 - i * 0.08 : 1,
-                  }}
-                />
-              ))}
+            <div className="text-[10px] font-mono-tight text-muted-foreground tracking-wider">
+              Underground probe
             </div>
+          </MetricCard>
+
+          <MetricCard
+            label="Water Level"
+            value={metrics.waterLevel.toFixed(0)}
+            unit="cm"
+            accent="cyan"
+          >
+            <WaterGauge level={metrics.waterLevel} />
           </MetricCard>
         </div>
 

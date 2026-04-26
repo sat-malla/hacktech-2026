@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useHistoricalReadings } from "../hooks/useHistoricalReadings";
 
 type SeriesKey = "moisture" | "temperature" | "waterLevel";
 
@@ -45,7 +46,23 @@ const SERIES_META: Record<
 };
 
 export default function HistoryChart() {
-  const data = useMemo(() => generateHistory(), []);
+  const { data: liveData, loading } = useHistoricalReadings(24);
+
+  const generatedData = useMemo(() => generateHistory(), []);
+
+  // Use real data when available; fall back to generated placeholder
+  const rawData = !loading && liveData.length > 0 ? liveData : generatedData;
+
+  // Normalise field name: real data uses `label`, generated uses `month`
+  const data: Point[] = rawData.map((d) => ({
+    month: (d as { label?: string; month?: string }).label ?? (d as { month: string }).month,
+    moisture: d.moisture,
+    temperature: d.temperature,
+    waterLevel: d.waterLevel,
+  }));
+
+  const isLive = !loading && liveData.length > 0;
+
   const [active, setActive] = useState<Record<SeriesKey, boolean>>({
     moisture: true,
     temperature: true,
@@ -100,11 +117,15 @@ export default function HistoryChart() {
     <div className="border border-border bg-card/40 rounded-sm p-5 md:p-7">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
-          <div className="text-[10px] font-mono-tight tracking-[0.3em] uppercase text-copper mb-2">
-            ◦ Trends · Past 12 months
+          <div className="text-[10px] font-mono-tight tracking-[0.3em] uppercase text-copper mb-2 flex items-center gap-2">
+            <span
+              className="inline-block w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: isLive ? "#4ade80" : "#475569", boxShadow: isLive ? "0 0 5px #4ade80" : "none" }}
+            />
+            {isLive ? `◦ Live data · ${liveData.length} readings` : "◦ Trends · Past 12 months"}
           </div>
           <h3 className="font-display font-light text-2xl md:text-3xl">
-            Growing season at a glance
+            {isLive ? "Sensor readings history" : "Growing season at a glance"}
           </h3>
         </div>
 

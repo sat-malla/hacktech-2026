@@ -169,8 +169,12 @@ function Index() {
               <div className="text-[10px] font-mono-tight tracking-[0.3em] uppercase text-copper">
                 ◦ Live Readings
               </div>
-              <span className="text-[9px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground">
-                refreshing every 2s
+              <span className="flex items-center gap-1.5 text-[9px] font-mono-tight tracking-[0.2em] uppercase text-muted-foreground">
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: metrics.stale ? "#d4a84a" : "#4ade80" }}
+                />
+                {metrics.stale ? "stale" : "live"}
               </span>
             </div>
 
