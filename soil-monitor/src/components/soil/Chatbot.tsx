@@ -35,6 +35,12 @@ export function ChatbotWidget() {
     setLoading(false);
   }
 
+  function formatMessage(text: string) {
+    return text.split("\n").filter(Boolean).map((line, i) => (
+      <p key={i} className="mb-1 last:mb-0">{line}</p>
+    ));
+  }
+
   return (
     <>
       <button
@@ -73,7 +79,7 @@ export function ChatbotWidget() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${m.role === "user" ? "bg-primary-chatbot text-primary-chatbot-foreground" : "bg-muted text-foreground"}`}>
-                  {m.content}
+                  {m.role === "assistant" ? formatMessage(m.content) : m.content}
                 </div>
               </div>
             ))}

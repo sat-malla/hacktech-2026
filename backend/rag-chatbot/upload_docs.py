@@ -1,18 +1,22 @@
-import requests
 import os
-import time
 import httpx
-
+import requests
 from dotenv import load_dotenv
+
 load_dotenv()
 
 API_KEY = os.getenv("BACKBOARD_API_KEY")
 BASE_URL = "https://app.backboard.io/api"
 HEADERS = {"X-API-Key": API_KEY}
-DATA_PATH = r"data"
 ASSISTANT_ID_FILE = ".assistant_id"
 
 SUPPORTED_EXTENSIONS = {".csv", ".pdf", ".txt", ".md", ".json"}
+
+DATA_PATHS = [
+    "data",
+    "../ml-prediction/csv_output",
+]
+
 
 def get_or_create_assistant():
     if os.path.exists(ASSISTANT_ID_FILE):
@@ -67,26 +71,32 @@ def upload_file(filepath: str, assistant_id: str):
 
     if response.status_code == 200:
         doc = response.json()
-        print(f"  OK — document_id: {doc.get('document_id')} status: {doc.get('status')}")
+        print(f"OK — document_id: {doc.get('document_id')} status: {doc.get('status')}")
     else:
-        print(f"  FAIL {response.status_code}: {response.text}")
+        print(f"FAIL {response.status_code}: {response.text}")
 
 
 def main():
     assistant_id = get_or_create_assistant()
 
-    files = [
-        os.path.join(DATA_PATH, f)
-        for f in os.listdir(DATA_PATH)
-        if os.path.isfile(os.path.join(DATA_PATH, f))
-    ]
+    all_files = []
+    for data_path in DATA_PATHS:
+        if not os.path.exists(data_path):
+            print(f"WARNING: path not found, skipping: {data_path}")
+            continue
+        files = [
+            os.path.join(data_path, f)
+            for f in os.listdir(data_path)
+            if os.path.isfile(os.path.join(data_path, f))
+        ]
+        all_files.extend(files)
 
-    if not files:
-        print(f"No files found in {DATA_PATH}/")
+    if not all_files:
+        print("No files found in any data path.")
         return
 
-    print(f"\nFound {len(files)} file(s) in {DATA_PATH}/\n")
-    for filepath in files:
+    print(f"\nFound {len(all_files)} file(s) total\n")
+    for filepath in all_files:
         upload_file(filepath, assistant_id)
 
     print("\nDone. Check app.backboard.io to confirm indexing status.")
@@ -94,8 +104,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-

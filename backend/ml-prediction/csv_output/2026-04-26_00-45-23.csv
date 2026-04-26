@@ -1,2 +1,2 @@
-soil_raw,soil_percent,water_raw,water_percent,water_inches,mq2_raw,mq2_percent,temperature_c,pressure_hpa,altitude_m
-955,100,1621,85,3.4,185,4,20.73,982.31,260.87
+crop_name,soil_raw,soil_percent,water_raw,water_percent,water_inches,mq2_raw,mq2_percent,temperature_c,pressure_hpa,altitude_m
+tomato,955,100,1621,85,3.4,185,4,20.73,982.31,260.87
