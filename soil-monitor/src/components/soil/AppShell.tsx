@@ -68,27 +68,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="ml-auto flex items-center gap-1">
             <button
-              aria-label="Search"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <Search className="h-3.5 w-3.5" />
-            </button>
-            <button
-              aria-label="Notifications"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <Bell className="h-3.5 w-3.5" />
-            </button>
-            <button
               onClick={toggleTheme}
               aria-label="Toggle theme"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
             >
-              {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
-            <div className="ml-2 flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
-              EM
-            </div>
           </div>
         </div>
       </header>

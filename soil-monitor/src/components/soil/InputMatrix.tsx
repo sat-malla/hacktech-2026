@@ -55,9 +55,9 @@ export function InputMatrix() {
               onValueChange={(v) => setActivePlot(v as PlotId)}
             >
               <SelectTrigger
-                className="h-auto w-full border-0 bg-transparent p-0 hover:opacity-80 focus:ring-0 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-60"
+                className="h-auto w-full border-border bg-transparent p-0 hover:opacity-80 focus:ring-0 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-60"
               >
-                <span className="font-serif text-[15px] p-2 italic text-foreground">
+                <span className="font-serif text-[14px] p-2 italic text-foreground">
                   {plotMeta.label} · {plotMeta.bearing}
                 </span>
               </SelectTrigger>
