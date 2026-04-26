@@ -39,7 +39,7 @@ export function ChatbotWidget() {
     <>
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary-chatbot text-primary-chatbot-foreground shadow-lg transition-transform hover:scale-105"
       >
         {open ? (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -53,8 +53,8 @@ export function ChatbotWidget() {
       </button>
 
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[600px] w-[380px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
-          <div className="flex items-center gap-3 border-b border-border bg-primary px-4 py-3">
+        <div className="fixed bottom-24 right-6 z-50 flex h-150 w-95 flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
+          <div className="flex items-center gap-3 border-b border-border bg-primary-chatbot px-4 py-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -72,7 +72,7 @@ export function ChatbotWidget() {
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+                <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${m.role === "user" ? "bg-primary-chatbot text-primary-chatbot-foreground" : "bg-muted text-foreground"}`}>
                   {m.content}
                 </div>
               </div>
@@ -96,7 +96,7 @@ export function ChatbotWidget() {
             <button
               onClick={send}
               disabled={loading}
-              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              className="rounded-xl bg-primary-chatbot px-4 py-2 text-sm font-medium text-primary-chatbot-foreground disabled:opacity-50"
             >
               Send
             </button>

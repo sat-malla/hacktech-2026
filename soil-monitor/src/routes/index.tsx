@@ -71,7 +71,7 @@ function DashboardHeader() {
         }}
       />
       {/* Meta strip */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11.5px] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[12.5px] text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
@@ -79,10 +79,8 @@ function DashboardHeader() {
           </span>
           <span className="text-success font-medium">Live</span>
         </span>
-        <span className="tabular-nums">37.7749° N, 122.4194° W</span>
-        <span className="tabular-nums">Apr 25</span>
+        <span className="tabular-nums">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
         <span className="tabular-nums">{plotMeta.label} · {plotMeta.bearing}</span>
-        <span className="tabular-nums">Sensor #{sensorId}</span>
       </div>
 
       {/* Title row */}

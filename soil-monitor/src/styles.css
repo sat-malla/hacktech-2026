@@ -39,8 +39,12 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-chatbot: var(--primary-chatbot);
+  --color-primary-chatbot-foreground: var(--primary-chatbot-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-chatbot: var(--secondary-chatbot);
+  --color-secondary-chatbot-foreground: var(--secondary-chatbot-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
@@ -106,9 +110,13 @@
 
   --primary: oklch(0.22 0.03 260);
   --primary-foreground: oklch(0.99 0.003 250);
+  --primary-chatbot: oklch(0.55 0.18 145);
+  --primary-chatbot-foreground: oklch(0.99 0.003 250);
 
   --secondary: oklch(0.965 0.005 250);
   --secondary-foreground: oklch(0.22 0.03 260);
+  --secondary-chatbot: oklch(0.965 0.005 250);
+  --secondary-chatbot-foreground: oklch(0.22 0.03 260);
 
   --muted: oklch(0.965 0.005 250);
   --muted-foreground: oklch(0.5 0.02 260);
@@ -158,11 +166,15 @@
   --card: oklch(0.21 0.018 260);
   --card-foreground: oklch(0.97 0.005 250);
   --popover: oklch(0.21 0.018 260);
-  --popover-foreground: oklch(0.97 0.005 250);
+  --popover-foreground: oklch(0.97 0.005 250);  
   --primary: oklch(0.97 0.005 250);
   --primary-foreground: oklch(0.2 0.02 260);
+  --primary-chatbot: oklch(0.65 0.18 145);
+  --primary-chatbot-foreground: oklch(0.15 0.02 260);
   --secondary: oklch(0.26 0.02 260);
   --secondary-foreground: oklch(0.97 0.005 250);
+  --secondary-chatbot: oklch(0.75 0.15 145);
+  --secondary-chatbot-foreground: oklch(0.2 0.02 260);
   --muted: oklch(0.26 0.02 260);
   --muted-foreground: oklch(0.7 0.02 260);
   --accent: oklch(0.28 0.02 260);
