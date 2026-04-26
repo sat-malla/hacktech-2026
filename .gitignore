@@ -1,3 +1,4 @@
 backend/rag-chatbot/.env
 backend/rag-chatbot/venv/
 backend/rag-chatbot/chroma_db/
+soil-monitor/node_modules/
