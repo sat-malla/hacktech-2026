@@ -38,7 +38,7 @@ export function SBAIGauge({ value, band }: { value: number; band: string }) {
         <span className="text-[52px] font-semibold leading-none tabular-nums tracking-tight">
           {value}
         </span>
-        <span className="mt-1.5 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="mt-1.5 text-[8.5px] px-2 py-1 uppercase tracking-[0.16em] text-muted-foreground">
           SBAI · {band}
         </span>
       </div>

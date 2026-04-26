@@ -154,7 +154,6 @@ export const useSoilStore = create<SoilStore>((set, get) => {
             ...plot,
             metrics: {
               ...plot.metrics,
-              ph: s.scanReadout.ph,
               om: s.scanReadout.om,
               drainage: s.scanReadout.drainage,
             },

@@ -1,18 +1,18 @@
 import { useSoilStore, PLOTS, type PlotId } from "@/lib/soil/store";
 import { CROPS, METRIC_BOUNDS, METRIC_LABELS, SCENARIOS } from "@/lib/soil/data";
 import type { MetricKey, ScenarioId, CropId } from "@/lib/soil/types";
-import { Slider } from "@/components/ui/slider";
+import { Slider } from "@/components/Ui/slider";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/Ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 
-const PRIMARY: MetricKey[] = ["ph", "om", "drainage", "moisture"];
+const PRIMARY: MetricKey[] = ["om", "drainage", "moisture"];
 const SECONDARY: MetricKey[] = ["nitrogen", "conductivity", "temp", "co2"];
 
 export function InputMatrix() {
@@ -57,7 +57,7 @@ export function InputMatrix() {
               <SelectTrigger
                 className="h-auto w-full border-0 bg-transparent p-0 hover:opacity-80 focus:ring-0 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-60"
               >
-                <span className="font-serif text-[15px] italic text-foreground">
+                <span className="font-serif text-[15px] p-2 italic text-foreground">
                   {plotMeta.label} · {plotMeta.bearing}
                 </span>
               </SelectTrigger>

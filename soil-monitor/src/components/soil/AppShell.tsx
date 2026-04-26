@@ -1,7 +1,8 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, Moon, Sun } from "lucide-react";
 import { useSoilStore, PLOTS } from "@/lib/soil/store";
+import { useEffect, useState } from "react";
 
 const NAV = [
   { to: "/" as const, label: "Dashboard" },
@@ -13,6 +14,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const loc = useLocation();
   const activePlot = useSoilStore((s) => s.activePlot);
   const plotMeta = PLOTS.find((p) => p.id === activePlot)!;
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = stored === "dark" || (!stored && prefersDark);
+    setDark(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
+  const toggleTheme = () => {
+    const newDark = !dark;
+    setDark(newDark);
+    document.documentElement.classList.toggle("dark", newDark);
+    localStorage.setItem("theme", newDark ? "dark" : "light");
+  };
   return (
     <div className="min-h-screen w-full bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
@@ -61,6 +78,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <Bell className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>
             <div className="ml-2 flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
               EM

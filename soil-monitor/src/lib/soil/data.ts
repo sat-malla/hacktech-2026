@@ -1,11 +1,6 @@
 import type { CropProfile, Scenario, MetricKey } from "./types";
 
 export const METRIC_LABELS: Record<MetricKey, { label: string; unit: string; fact: string }> = {
-  ph: {
-    label: "pH",
-    unit: "",
-    fact: "Most nutrients are most available between pH 6.2 and 6.8.",
-  },
   nitrogen: {
     label: "Nitrogen",
     unit: "ppm",
@@ -50,7 +45,6 @@ export const CROPS: CropProfile[] = [
     group: "quick-veg",
     maxPrepDays: 90,
     targets: {
-      ph: { min: 6.2, max: 6.8 },
       nitrogen: { min: 18, max: 35 },
       moisture: { min: 20, max: 30 },
       drainage: { min: 7, max: 10 },
@@ -59,7 +53,7 @@ export const CROPS: CropProfile[] = [
       temp: { min: 60, max: 80 },
       co2: { min: 30, max: 70 },
     },
-    sensitivity: { drainage: 0.9, ph: 0.7, om: 0.8, conductivity: 0.6 },
+    sensitivity: { drainage: 0.9, om: 0.8, conductivity: 0.6 },
     idealPrepDays: 35,
   },
   {
@@ -68,7 +62,6 @@ export const CROPS: CropProfile[] = [
     group: "quick-veg",
     maxPrepDays: 120,
     targets: {
-      ph: { min: 5.5, max: 6.5 },
       nitrogen: { min: 15, max: 30 },
       moisture: { min: 22, max: 32 },
       drainage: { min: 7, max: 10 },
@@ -77,7 +70,7 @@ export const CROPS: CropProfile[] = [
       temp: { min: 55, max: 78 },
       co2: { min: 30, max: 75 },
     },
-    sensitivity: { ph: 0.85, drainage: 0.85, om: 0.75, conductivity: 0.7 },
+    sensitivity: { drainage: 0.85, om: 0.75, conductivity: 0.7 },
     idealPrepDays: 50,
   },
 ];
@@ -108,7 +101,6 @@ export const SCENARIOS: Scenario[] = [
     story:
       "A 40-acre Iowa plot worked continuously for 6 seasons of corn-on-corn. Organic matter has been mined out and microbial respiration is fading.",
     metrics: {
-      ph: 5.6,
       nitrogen: 12,
       moisture: 18,
       drainage: 6,
@@ -122,7 +114,6 @@ export const SCENARIOS: Scenario[] = [
       soilType: "Silt Loam",
       om: 1.4,
       drainage: 6,
-      ph: 5.6,
       confidence: 92,
     },
   },
@@ -132,7 +123,6 @@ export const SCENARIOS: Scenario[] = [
     story:
       "Heavy clay backyard plot in a low-drainage spot. Three weeks of rain left it saturated. Roots are starving for oxygen.",
     metrics: {
-      ph: 7.4,
       nitrogen: 22,
       moisture: 48,
       drainage: 2,
@@ -146,7 +136,6 @@ export const SCENARIOS: Scenario[] = [
       soilType: "Heavy Clay",
       om: 2.8,
       drainage: 2,
-      ph: 7.4,
       confidence: 88,
     },
   },
@@ -156,7 +145,6 @@ export const SCENARIOS: Scenario[] = [
     story:
       "A two-year-old raised bed with store-bought topsoil. Decent baseline but uninspiring biology — typical suburban garden.",
     metrics: {
-      ph: 6.5,
       nitrogen: 24,
       moisture: 24,
       drainage: 7,
@@ -170,7 +158,6 @@ export const SCENARIOS: Scenario[] = [
       soilType: "Loam",
       om: 3.2,
       drainage: 7,
-      ph: 6.5,
       confidence: 95,
     },
   },
@@ -180,7 +167,6 @@ export const SCENARIOS: Scenario[] = [
     story:
       "Three years of cover cropping and compost. Living roots year-round, strong aggregate structure, microbes humming.",
     metrics: {
-      ph: 6.6,
       nitrogen: 32,
       moisture: 26,
       drainage: 8,
@@ -194,14 +180,12 @@ export const SCENARIOS: Scenario[] = [
       soilType: "Sandy Loam",
       om: 5.4,
       drainage: 8,
-      ph: 6.6,
       confidence: 97,
     },
   },
 ];
 
 export const METRIC_BOUNDS: Record<MetricKey, { min: number; max: number; step: number }> = {
-  ph: { min: 3.5, max: 9, step: 0.1 },
   nitrogen: { min: 0, max: 80, step: 1 },
   moisture: { min: 0, max: 70, step: 0.5 },
   drainage: { min: 0, max: 10, step: 0.1 },

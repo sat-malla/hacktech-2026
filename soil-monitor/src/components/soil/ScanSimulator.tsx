@@ -38,7 +38,7 @@ export function ScanSimulator() {
             Snap a photo of the soil surface
           </h3>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            We classify soil type, OM, drainage, and pH from imagery.
+            We classify soil type, OM, and drainage from imagery.
           </p>
         </div>
         <button
@@ -85,7 +85,6 @@ export function ScanSimulator() {
             <ReadoutChip label="Soil Type" value={scenario.scanReadout.soilType} />
             <ReadoutChip label="OM" value={`${scenario.scanReadout.om}%`} />
             <ReadoutChip label="Drainage" value={`${scenario.scanReadout.drainage}/10`} />
-            <ReadoutChip label="pH" value={String(scenario.scanReadout.ph)} />
             <ReadoutChip
               label="Confidence"
               value={`${scenario.scanReadout.confidence}%`}

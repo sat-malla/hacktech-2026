@@ -226,3 +226,13 @@
 @utility hairline {
   border: 1px solid var(--border);
 }
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
